@@ -63,7 +63,6 @@ dT1eq= function(T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1(t))/H
 dT2eq=function (T1,T2,t) S2*(1-2*alpha*aeq+AHTeq-(A+B*T2)+eps2(t))/H
 
 
-
 #loop 2 with equilibrium no forcing
 list1eq= vector ("list", n)
 list2eq= vector ("list", n)
@@ -132,6 +131,8 @@ t=0
  T1diffbaseeps1 = list1eps1[[n]]-list1eps1[[tA]]
  T2diffbaseeps0 = list2eps0[[n]]-list2eps0[[tA]]
 
+
+ 
  #forcing feedback not active-base case (dT1eq and dT2eq) (esp1=0, eps2=1)
  list1eps0= vector("list",n)
  list2eps1=vector("list", n)
@@ -163,6 +164,12 @@ t=0
  
  T1diffbaseeps0 = list1eps0[[n]]-list1eps0[[tA]]
  T2diffbaseeps1 = list2eps1[[n]]-list2eps1[[tA]]
+ 
+ #base case sensitivity matrix 
+ 
+ lambdavectorbase=c(T1diffbaseeps1,T1diffbaseeps0,T2diffbaseeps0,T2diffbaseeps1)
+ lambdabase= matrix(lambdavectorbase,2) 
+ lambdabaseinverse= solve(lambdabase)
  
  #Forcing feedback all active (dT1, dT2) (eps1=1, eps2=0)
  list1eps1a=vector("list",n)
@@ -254,6 +261,7 @@ t=0
  T1diffeps1t = list1eps1t[[n]]-list1eps1t[[tA]]
  T2diffeps0t = list2eps0t[[n]]-list2eps0t[[tA]]
  
+ 
  #Top down in reference to a (ice albedo) use AHT(T1,T2) and aeq (eps1=0, eps2=1)
  list1eps0t=vector("list",n)
  list2eps1t=vector("list",n)
@@ -283,6 +291,16 @@ t=0
 
  T1diffeps0t = list1eps0t[[n]]-list1eps0t[[tA]]
  T2diffeps1t = list2eps1t[[n]]-list2eps1t[[tA]]
+ 
+
+ 
+ #top down sensitivity matrix                                                                     #start here for matrix 
+ lambdavectort=c(T1diffeps1t, T2diffeps0t, T1diffeps0t, T2diffeps1t)
+ lambdat= matrix(lambdavectort, 2)
+ 
+ #Top gain matrix 
+  
+ Gt= lambdat %*% lambdabaseinverse
  
  #Bottom up in reference to a (ice albedo) use AHTeq and a(T1,T2) (eps1=1, eps2=0) 
  list1eps1b=vector("list",n)
@@ -344,4 +362,12 @@ t=0
  T1diffeps0b = list1eps0b[[n]]-list1eps0b[[tA]]
  T2diffeps1b = list2eps1b[[n]]-list2eps1b[[tA]]
  
+ #bottom up sensitivity matrix 
+ 
+ lambdavectorb=c(T1diffeps1b, T2diffeps0b, T1diffeps0b, T2diffeps1b)
+ lambdab= matrix(lambdavectorb,2)
+
+ #bottom up gain matrix 
+ 
+ Gb= lambdab %*% lambdabaseinverse
  
