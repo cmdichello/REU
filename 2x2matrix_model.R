@@ -1,40 +1,40 @@
-H<-1; #arbitrary 
-S1<-40.9; #PW
-A<--49.7; #PW
-B<-0.29; #PW 
-S2<-24.1; #PW
-alpha<-0.29; 
-F0<-3; #PW
-gamma1<-0.035;
-gamma2<-0.002852;
-Tice<-271.15;
+H=1; #arbitrary 
+S1=40.9; #PW
+A=-49.7; #PW
+B=0.29; #PW 
+S2=24.1; #PW
+alpha=0.29; 
+F0=3; #PW
+gamma1=0.035;
+gamma2=0.002852;
+Tice=271.15;
 
-dt<-1;
-T1<-300; 
-T2<-288; 
+dt=1;
+T1=300; 
+T2=288; 
 t<-0;
 n<-1000; #arbritrary
 tA =200
 
-eps1 <- function (t) ifelse(t < tA, 0, 0) #forcing function 
-eps2 <- function (t) ifelse(t < tA, 0, 0) #forcing function 
+eps1 = function (t) ifelse(t < tA, 0, 0) #forcing function 
+eps2 = function (t) ifelse(t < tA, 0, 0) #forcing function 
 
-phiice <- function (T1, T2) pi/6 +(pi/6)*(T1-Tice)/(T1-T2)
-a <- function (T1, T2) 1-sin(phiice(T1,T2))
-CCeq <- function (T1) 6.11*exp(17.23*((T1-273.25)/(T1-35.86)))
-AHT <- function (T1, T2) F0+gamma1*(T1-T2)+gamma2*CCeq(T1)*(T1-T2)
+phiice = function (T1, T2) pi/6 +(pi/6)*(T1-Tice)/(T1-T2)
+a = function (T1, T2) 1-sin(phiice(T1,T2))
+CCeq = function (T1) 6.11*exp(17.23*((T1-273.25)/(T1-35.86)))
+AHT = function (T1, T2) F0+gamma1*(T1-T2)+gamma2*CCeq(T1)*(T1-T2)
 
-dT1 <- function (T1,T2,t) (S1-AHT(T1,T2)-(A+B*T1)+eps1(t))/H
-dT2 <- function (T1,T2,t) (S2*(1-2*alpha*a(T1,T2))+AHT(T1, T2)-(A+B*T2)+eps2(t))/H
+dT1 = function (T1,T2,t) (S1-AHT(T1,T2)-(A+B*T1)+eps1(t))/H
+dT2 = function (T1,T2,t) (S2*(1-2*alpha*a(T1,T2))+AHT(T1, T2)-(A+B*T2)+eps2(t))/H
 
 
-list1<- vector("list", n)
-list2<- vector("list",n)
-listt<- vector ("list",n)
+list1= vector("list", n)
+list2= vector("list",n)
+listt= vector ("list",n)
 
-list1[[1]] <- T1
-list2[[1]] <- T2
-listt[[1]] <- t
+list1[[1]] = T1
+list2[[1]] = T2
+listt[[1]] = t
 
 for (k in 1: n){
   Var1=T1+dT1(T1,T2,t)*dt
@@ -167,9 +167,81 @@ t=0
  
  #base case sensitivity matrix 
  
- lambdavectorbase=c(T1diffbaseeps1,T1diffbaseeps0,T2diffbaseeps0,T2diffbaseeps1)
+ lambdavectorbase=c(T1diffbaseeps1,T2diffbaseeps0,T1diffbaseeps0,T2diffbaseeps1)
  lambdabase= matrix(lambdavectorbase,2) 
  lambdabaseinverse= solve(lambdabase)
+ 
+ 
+ #Bottom up in reference to a (ice albedo) use AHTeq and a(T1,T2) (eps1=1, eps2=0) 
+ list1eps1b=vector("list",n)
+ list2eps0b=vector("list",n)
+ T1=300
+ T2=288
+ t=0
+ 
+ list1eps1b[[1]]=T1
+ list2eps0b[[1]]=T2
+ 
+ #eps1_1 and eps2_0 defined above 
+ dT1_eps1b = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_1(t))/H
+ dT2_eps0b = function (T1,T2,t) (S2*(1-2*alpha*a(T1,T2))+AHTeq-(A+B*T2)+eps2_0(t))/H 
+ for (k in 1: n){
+   Var1=T1+dT1_eps1b(T1,T2,t)*dt
+   Var2=T2+dT2_eps0b(T1,T2,t)*dt
+   t=t+dt
+   T1=Var1
+   T2=Var2
+   list1eps1b[[k+1]] = T1
+   list2eps0b[[k+1]] = T2
+   listt[[k]] = t
+ }
+ plot(listt, list1eps1b, ylim = c(240,300), type="l", col="red")
+ lines(listt, list2eps0b, col="blue")
+ title( "Bottom up (a is active), eps1=1, eps2=0")  
+ 
+ T1diffeps1b = list1eps1b[[n]]-list1eps1b[[tA]]
+ T2diffeps0b = list2eps0b[[n]]-list2eps0b[[tA]]
+ 
+ #Bottom up in reference to a (ice albedo) use AHTeq and a(T1,T2) (eps1=0, eps2=1)
+ list1eps0b=vector("list",n)
+ list2eps1b=vector("list",n)
+ T1=300
+ T2=288
+ t=0
+ 
+ list1eps0b[[1]]=T1
+ list2eps1b[[1]]=T2
+ 
+ #eps1_0 and eps2_1 defined above 
+ dT1_eps0b = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_0(t))/H
+ dT2_eps1b = function (T1,T2,t) (S2*(1-2*alpha*a(T1,T2))+AHTeq-(A+B*T2)+eps2_1(t))/H
+ for (k in 1: n){
+   Var1=T1+dT1_eps0b(T1,T2,t)*dt
+   Var2=T2+dT2_eps1b(T1,T2,t)*dt
+   t=t+dt
+   T1=Var1
+   T2=Var2
+   list1eps0b[[k+1]] = T1
+   list2eps1b[[k+1]] = T2
+   listt[[k]] = t
+ }
+ plot(listt, list1eps0b, ylim = c(240,300), type="l", col="red")
+ lines(listt, list2eps1b, col="blue")
+ title( "Bottom up (a is active), eps1=0, eps2=1")
+ 
+ T1diffeps0b = list1eps0b[[n]]-list1eps0b[[tA]]
+ T2diffeps1b = list2eps1b[[n]]-list2eps1b[[tA]]
+ 
+ #bottom up sensitivity matrix 
+ 
+ lambdavectorb=c(T1diffeps1b, T2diffeps0b, T1diffeps0b, T2diffeps1b)
+ lambdab= matrix(lambdavectorb,2)
+ 
+ #bottom up gain matrix 
+ 
+ Gb= lambdab %*% lambdabaseinverse
+ 
+ 
  
  #Forcing feedback all active (dT1, dT2) (eps1=1, eps2=0)
  list1eps1a=vector("list",n)
@@ -185,8 +257,8 @@ t=0
  dT1_eps1a = function (T1,T2,t) (S1-AHT(T1,T2)-(A+B*T1)+eps1_1(t))/H
  dT2_eps0a = function (T1,T2,t) (S2*(1-2*alpha*a(T1,T2))+AHT(T1,T2)-(A+B*T2)+eps2_0(t))/H 
  for (k in 1: n){
-   Var1=T1+dT1_eps1(T1,T2,t)*dt
-   Var2=T2+dT2_eps0(T1,T2,t)*dt
+   Var1=T1+dT1_eps1a(T1,T2,t)*dt
+   Var2=T2+dT2_eps0a(T1,T2,t)*dt
    t=t+dt
    T1=Var1
    T2=Var2
@@ -230,6 +302,12 @@ t=0
 
  T1diffeps0a = list1eps0a[[n]]-list1eps0a[[tA]]
  T2diffeps1a = list2eps1a[[n]]-list2eps1a[[tA]]
+ #all active sensitivity matrix 
+ #lambdaalpha 
+ 
+ lambdavectora= c(T1diff1a,T2diff0a,T1diffeps0a,T2diffeps1a)
+ lambdaa=matrix(lambdavectora,2)
+ 
  
  #Top down in reference to a (ice albedo) use AHT(T1,T2) and aeq (eps1=1, eps2=0)
  list1eps1t=vector("list",n)
@@ -250,13 +328,13 @@ t=0
    t=t+dt
    T1=Var1
    T2=Var2
-   list1eps1t[[k+1]] = T1
-   list2eps0t[[k+1]] = T2
-   listt[[k]] = t
+   list1eps1t[[k+1]]= T1
+   list2eps0t[[k+1]]= T2
+   listt[[k]]= t
  } 
  plot(listt, list1eps1t, ylim = c(240,300), type="l", col="red")
  lines(listt, list2eps0t, col="blue")
- title( "AHT active forcing, a is not active, eps1=1, eps2=0")  
+ title( "Top down (AHT is active), eps1=1, eps2=0")  
  
  T1diffeps1t = list1eps1t[[n]]-list1eps1t[[tA]]
  T2diffeps0t = list2eps0t[[n]]-list2eps0t[[tA]]
@@ -287,87 +365,18 @@ t=0
  }  
  plot(listt, list1eps0t, ylim = c(240,300), type="l", col="red")
  lines(listt, list2eps1t, col="blue")
- title( "AHT active forcing, a is not active, eps1=0, eps2=1")  
+ title("Top down (AHT is active), eps1=0, eps2=1")  
 
  T1diffeps0t = list1eps0t[[n]]-list1eps0t[[tA]]
  T2diffeps1t = list2eps1t[[n]]-list2eps1t[[tA]]
  
-
  
- #top down sensitivity matrix                                                                     #start here for matrix 
- lambdavectort=c(T1diffeps1t, T2diffeps0t, T1diffeps0t, T2diffeps1t)
- lambdat= matrix(lambdavectort, 2)
- 
+ #top down sensitivity matrix                                                                    
+ lambdavectort=c(T1diffeps1t, T2diffeps0t, T1diffeps0t, T2diffeps1t) 
+ lambdat=matrix(lambdavectort, 2)
+ lambdat=solve(lambdat)
  #Top gain matrix 
   
- Gt= lambdat %*% lambdabaseinverse
- 
- #Bottom up in reference to a (ice albedo) use AHTeq and a(T1,T2) (eps1=1, eps2=0) 
- list1eps1b=vector("list",n)
- list2eps0b=vector("list",n)
- T1=300
- T2=288
- t=0
- 
- list1eps1b[[1]]=T1
- list2eps0b[[1]]=T2
- 
- #eps1_1 and eps2_0 defined above 
- dT1_eps1b = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_1(t))/H
- dT2_eps0b = function (T1,T2,t) (S2*(1-2*alpha*a(T1,T2))+AHTeq-(A+B*T2)+eps2_0(t))/H 
- for (k in 1: n){
-   Var1=T1+dT1_eps1b(T1,T2,t)*dt
-   Var2=T2+dT2_eps0b(T1,T2,t)*dt
-   t=t+dt
-   T1=Var1
-   T2=Var2
-   list1eps1b[[k+1]] = T1
-   list2eps0b[[k+1]] = T2
-   listt[[k]] = t
- }
- plot(listt, list1eps1b, ylim = c(240,300), type="l", col="red")
- lines(listt, list2eps0b, col="blue")
- title( "AHT not active, a is active, eps1=1, eps2=0")  
+ Gt= lambdaa %*% lambdat
 
- T1diffeps1b = list1eps1b[[n]]-list1eps1b[[tA]]
- T2diffeps0b = list2eps0b[[n]]-list2eps0b[[tA]]
- 
- #Bottom up in reference to a (ice albedo) use AHTeq and a(T1,T2) (eps1=0, eps2=1)
- list1eps0b=vector("list",n)
- list2eps1b=vector("list",n)
- T1=300
- T2=288
- t=0
- 
- list1eps0b[[1]]=T1
- list2eps1b[[1]]=T2
- 
- #eps1_0 and eps2_1 defined above 
- dT1_eps0b = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_0(t))/H
- dT2_eps1b = function (T1,T2,t) (S2*(1-2*alpha*a(T1,T2))+AHTeq-(A+B*T2)+eps2_1(t))/H
- for (k in 1: n){
-   Var1=T1+dT1_eps0b(T1,T2,t)*dt
-   Var2=T2+dT2_eps1b(T1,T2,t)*dt
-   t=t+dt
-   T1=Var1
-   T2=Var2
-   list1eps0b[[k+1]] = T1
-   list2eps1b[[k+1]] = T2
-   listt[[k]] = t
- }
- plot(listt, list1eps0b, ylim = c(240,300), type="l", col="red")
- lines(listt, list2eps1b, col="blue")
- title( "AHT not active, a is active, eps1=0, eps2=1")
-  
- T1diffeps0b = list1eps0b[[n]]-list1eps0b[[tA]]
- T2diffeps1b = list2eps1b[[n]]-list2eps1b[[tA]]
- 
- #bottom up sensitivity matrix 
- 
- lambdavectorb=c(T1diffeps1b, T2diffeps0b, T1diffeps0b, T2diffeps1b)
- lambdab= matrix(lambdavectorb,2)
-
- #bottom up gain matrix 
- 
- Gb= lambdab %*% lambdabaseinverse
- 
+     
