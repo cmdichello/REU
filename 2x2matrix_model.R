@@ -15,7 +15,7 @@ T2=288;
 t<-0;
 n<-1000; #arbritrary
 tA =200
-epsilon=c(1,0)
+
 
 eps1 = function (t) ifelse(t < tA, 0, 0) #forcing function 
 eps2 = function (t) ifelse(t < tA, 0, 0) #forcing function 
@@ -108,12 +108,16 @@ list2eps0[[1]]=288
 T1=300
 T2=288
 t=0
-
- eps1_1 = function (t) ifelse(t < tA, 0, 1 )#forcing function ################################################################eps1
- eps2_0 = function (t) ifelse(t < tA, 0, 0)#forcing function ################################################################eps0
+epsilon= c(.8,.2)
+ eps1_1 = function (t) ifelse(t < tA, 0, .8 )#forcing function ################################################################eps1
+ eps2_0 = function (t) ifelse(t < tA, 0, .2)#forcing function ################################################################eps0
  dT1_eps1 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_1(t))/H
  dT2_eps0 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_0(t))/H #using AHT function and a function
  
+ eps1_0 = function (t) ifelse(t < tA, 0, .2) #forcing function ######################################################################eps0
+ eps2_1 = function (t) ifelse(t < tA, 0, .8) #forcing function ######################################################################eps1
+ dT1_eps0 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_0(t))/H
+ dT2_eps1 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_1(t))/H 
 
  for (k in 1: n){
    Var1=T1+dT1_eps1(T1,T2,t)*dt
@@ -144,10 +148,10 @@ t=0
  list1eps0[[1]]=T1
  list2eps1[[1]]=T2
  
- eps1_0 = function (t) ifelse(t < tA, 0, 0) #forcing function ######################################################################eps0
- eps2_1 = function (t) ifelse(t < tA, 0, 1) #forcing function ######################################################################eps1
- dT1_eps0 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_0(t))/H
- dT2_eps1 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_1(t))/H 
+ # eps1_0 = function (t) ifelse(t < tA, 0, .2) #forcing function 
+ # eps2_1 = function (t) ifelse(t < tA, 0, .8) #forcing function 
+ # dT1_eps0 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_0(t))/H
+ # dT2_eps1 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_1(t))/H 
  
  for (k in 1: n){
    Var1=T1+dT1_eps0(T1,T2,t)*dt
@@ -402,4 +406,16 @@ deltaTalphab=lambdab%*%epsilon
  
  deltaTalphat=lambdaa%*% epsilon 
  
-cat("deltaTalphaestb=", deltaTalphaestimateb, "deltaTalphab=", deltaTalphab,"deltaTalphatestt=", deltaTalphaestimatet, "deltaTalphat=", deltaTalphat )
+ 
+ differenceb= ((abs(deltaTalphaestimateb-deltaTalphab))/((deltaTalphaestimateb+deltaTalphab)/2))*100
+ 
+ differencet= ((abs(deltaTalphaestimatet-deltaTalphat))/((deltaTalphaestimatet+deltaTalphat)/2))*100
+ 
+ cat("deltaTalphaestb=", deltaTalphaestimateb, "deltaTalphab=", deltaTalphab,
+     "deltaTalphatestt=", deltaTalphaestimatet, "deltaTalphat=", deltaTalphat, 
+     "%diff b= ",differenceb, "%diff t=", differencet)
+ 
+
+ 
+ 
+ 
