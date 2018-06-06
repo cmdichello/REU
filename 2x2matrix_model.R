@@ -16,6 +16,7 @@ t<-0;
 n<-1000; #arbritrary
 tA =200
 
+
 eps1 = function (t) ifelse(t < tA, 0, 0) #forcing function 
 eps2 = function (t) ifelse(t < tA, 0, 0) #forcing function 
 
@@ -108,11 +109,14 @@ T1=300
 T2=288
 t=0
 
- eps1_1 = function (t) ifelse(t < tA, 0, 1) #forcing function 
- eps2_0 = function (t) ifelse(t < tA, 0, 0) #forcing function 
+ eps1_1 = function (t) ifelse(t < tA, 0, -.9 )
+ eps2_0 = function (t) ifelse(t < tA, 0, .1)
  dT1_eps1 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_1(t))/H
  dT2_eps0 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_0(t))/H #using AHT function and a function
- 
+ eps1_0 = function (t) ifelse(t < tA, 0, -.1) 
+ eps2_1 = function (t) ifelse(t < tA, 0, .9) 
+ dT1_eps0 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_0(t))/H
+ dT2_eps1 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_1(t))/H 
 
  for (k in 1: n){
    Var1=T1+dT1_eps1(T1,T2,t)*dt
@@ -143,10 +147,10 @@ t=0
  list1eps0[[1]]=T1
  list2eps1[[1]]=T2
  
- eps1_0 = function (t) ifelse(t < tA, 0, 0) #forcing function 
- eps2_1 = function (t) ifelse(t < tA, 0, 1) #forcing function 
- dT1_eps0 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_0(t))/H
- dT2_eps1 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_1(t))/H 
+ # eps1_0 = function (t) ifelse(t < tA, 0, .2) #forcing function 
+ # eps2_1 = function (t) ifelse(t < tA, 0, .8) #forcing function 
+ # dT1_eps0 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_0(t))/H
+ # dT2_eps1 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_1(t))/H 
  
  for (k in 1: n){
    Var1=T1+dT1_eps0(T1,T2,t)*dt
@@ -238,10 +242,21 @@ t=0
  lambdab= matrix(lambdavectorb,2)
  
  #bottom up gain matrix 
+ GoriginalBottom=matrix()
+
  
  Gb= lambdab %*% lambdabaseinverse
  
- 
+#  GoriginalBottom= matrix(c(1, 0.1812612, 0.000000, 2.017988),2)
+#  
+#  deltaT0bvector= lambdabase%*%epsilon
+# 
+# 
+# deltaTalphaestimateb= GoriginalBottom%*%deltaT0bvector
+# 
+# deltaTalphab=lambdab%*%epsilon
+
+
  
  #Forcing feedback all active (dT1, dT2) (eps1=1, eps2=0)
  list1eps1a=vector("list",n)
@@ -371,12 +386,35 @@ t=0
  T2diffeps1t = list2eps1t[[n]]-list2eps1t[[tA]]
  
  
- #top down sensitivity matrix                                                                    
+ #top down sensitivity matrix  (THE BASE FOR TOP DOWN)                                                                  
  lambdavectort=c(T1diffeps1t, T2diffeps0t, T1diffeps0t, T2diffeps1t) 
  lambdat=matrix(lambdavectort, 2)
- lambdat=solve(lambdat)
+ lambdatinv=solve(lambdat)
  #Top gain matrix 
-  
- Gt= lambdaa %*% lambdat
+ 
+ Gt= lambdaa %*% lambdatinv
 
-     
+ # GoriginalTop= matrix(c(1.0167576, 0.0810036, 0.1343562, 1.6524002),2)
+ # 
+ # deltaT0t= lambdaa%*%epsilon
+ # 
+ # 
+ # deltaT0tvector= lambdat%*%epsilon 
+ # 
+ # deltaTalphaestimatet= GoriginalTop%*%deltaT0tvector
+ # 
+ # deltaTalphat=lambdaa%*% epsilon 
+ # 
+ # 
+ # differenceb= ((abs(deltaTalphaestimateb-deltaTalphab))/(abs(deltaTalphaestimateb+deltaTalphab)/2))*100
+ # 
+ # differencet= ((abs(deltaTalphaestimatet-deltaTalphat))/(abs(deltaTalphaestimatet+deltaTalphat)/2))*100
+ # 
+ # cat("deltaTalphaestb=", deltaTalphaestimateb, "deltaTalphab=", deltaTalphab,
+ #     "deltaTalphatestt=", deltaTalphaestimatet, "deltaTalphat=", deltaTalphat, 
+ #     "%diff b= ",differenceb, "%diff t=", differencet)
+ 
+
+ 
+ 
+ 
