@@ -108,6 +108,7 @@ list2eps0[[1]]=288
 T1=300
 T2=288
 t=0
+<<<<<<< HEAD
 
  eps1_1 = function (t) ifelse(t < tA, 0, -.9 )
  eps2_0 = function (t) ifelse(t < tA, 0, .1)
@@ -115,6 +116,16 @@ t=0
  dT2_eps0 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_0(t))/H #using AHT function and a function
  eps1_0 = function (t) ifelse(t < tA, 0, -.1) 
  eps2_1 = function (t) ifelse(t < tA, 0, .9) 
+=======
+epsilon= c(.8,.2)
+ eps1_1 = function (t) ifelse(t < tA, 0, .8 )#forcing function ################################################################eps1
+ eps2_0 = function (t) ifelse(t < tA, 0, .2)#forcing function ################################################################eps0
+ dT1_eps1 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_1(t))/H
+ dT2_eps0 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_0(t))/H #using AHT function and a function
+ 
+ eps1_0 = function (t) ifelse(t < tA, 0, .2) #forcing function ######################################################################eps0
+ eps2_1 = function (t) ifelse(t < tA, 0, .8) #forcing function ######################################################################eps1
+>>>>>>> b4fcd5295b12a5a208c751575ebddcd6bee5ab52
  dT1_eps0 = function (T1,T2,t) (S1-AHTeq-(A+B*T1)+eps1_0(t))/H
  dT2_eps1 = function (T1,T2,t) (S2*(1-2*alpha*aeq)+AHTeq-(A+B*T2)+eps2_1(t))/H 
 
@@ -247,6 +258,7 @@ t=0
  
  Gb= lambdab %*% lambdabaseinverse
  
+<<<<<<< HEAD
 #  GoriginalBottom= matrix(c(1, 0.1812612, 0.000000, 2.017988),2)
 #  
 #  deltaT0bvector= lambdabase%*%epsilon
@@ -255,6 +267,16 @@ t=0
 # deltaTalphaestimateb= GoriginalBottom%*%deltaT0bvector
 # 
 # deltaTalphab=lambdab%*%epsilon
+=======
+ GoriginalBottom= matrix(c(1, 0.1812612, 0.000000, 2.017988),2)
+ 
+ deltaT0bvector= lambdabase%*%epsilon
+
+
+deltaTalphaestimateb= GoriginalBottom%*%deltaT0bvector
+
+deltaTalphab=lambdab%*%epsilon
+>>>>>>> b4fcd5295b12a5a208c751575ebddcd6bee5ab52
 
 
  
@@ -391,6 +413,7 @@ t=0
  lambdat=matrix(lambdavectort, 2)
  lambdatinv=solve(lambdat)
  #Top gain matrix 
+<<<<<<< HEAD
  
  Gt= lambdaa %*% lambdatinv
 
@@ -413,6 +436,30 @@ t=0
  # cat("deltaTalphaestb=", deltaTalphaestimateb, "deltaTalphab=", deltaTalphab,
  #     "deltaTalphatestt=", deltaTalphaestimatet, "deltaTalphat=", deltaTalphat, 
  #     "%diff b= ",differenceb, "%diff t=", differencet)
+=======
+  ##############################################################################################################################################
+ Gt= lambdaa %*% lambdatinv
+
+ GoriginalTop= matrix(c(1.0167576, 0.0810036, 0.1343562, 1.6524002),2)
+ 
+ deltaT0t= lambdaa%*%epsilon
+ 
+
+ deltaT0tvector= lambdat%*%epsilon 
+ 
+ deltaTalphaestimatet= GoriginalTop%*%deltaT0tvector
+ 
+ deltaTalphat=lambdaa%*% epsilon 
+ 
+ 
+ differenceb= ((abs(deltaTalphaestimateb-deltaTalphab))/((deltaTalphaestimateb+deltaTalphab)/2))*100
+ 
+ differencet= ((abs(deltaTalphaestimatet-deltaTalphat))/((deltaTalphaestimatet+deltaTalphat)/2))*100
+ 
+ cat("deltaTalphaestb=", deltaTalphaestimateb, "deltaTalphab=", deltaTalphab,
+     "deltaTalphatestt=", deltaTalphaestimatet, "deltaTalphat=", deltaTalphat, 
+     "%diff b= ",differenceb, "%diff t=", differencet)
+>>>>>>> b4fcd5295b12a5a208c751575ebddcd6bee5ab52
  
 
  
